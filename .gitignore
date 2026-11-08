@@ -1,0 +1,33 @@
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+.venv312/
+env/
+
+# Dataset files
+fish4knowedge_dataset/
+fish_dataset.zip
+
+# Training outputs
+runs/
+
+# Large trained model weights
+*.pt
+*.pth
+
+# Environment variables and secrets
+.env
+.env.*
+
+# IDE files
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db

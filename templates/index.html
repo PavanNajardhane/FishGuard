@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FishGuard - AI Fish Classification &amp; Detection</title>
+<style>
+:root {
+    color-scheme: dark;
+    --tx: #eaf6fb;
+    --mut: #b7d2df;
+    --ac: #65e4dc;
+    --glass: rgba(3, 27, 43, .90);
+    --bd: rgba(101, 228, 220, .35);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; scroll-behavior: smooth; }
+body {
+    min-width: 320px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--tx);
+    overflow-x: hidden;
+    background: linear-gradient(145deg, #06364d, #04283d, #031522) fixed;
+}
+#bgvid {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; z-index: 0; display: block;
+}
+body::after {
+    content: ""; position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(180deg, rgba(2,20,35,.35), rgba(2,20,35,.75));
+}
+.wrap { position: relative; z-index: 2; width: 100%; max-width: 1440px; margin: auto; padding: 20px; }
+header { padding: 12px 6px; }
+h1 { margin: 0; color: #f2fbff; font-size: clamp(1.7rem, 3vw, 2.5rem); }
+.sub { color: var(--mut); font-size: .9rem; margin-top: 5px; line-height: 1.5; }
+.card {
+    background: var(--glass); color: var(--tx);
+    border: 1px solid var(--bd); border-radius: 16px; padding: 18px;
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.25); margin-bottom: 18px;
+}
+.card h2 { margin: 0 0 12px; font-size: 1.1rem; color: var(--ac); }
+.dashboard-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 20px; }
+.dashboard-nav a {
+    color: var(--tx); text-decoration: none; border: 1px solid var(--bd);
+    background: rgba(4,48,67,.95); padding: 10px 14px; border-radius: 9px; font-size: .84rem;
+}
+.dashboard-nav a:hover { border-color: var(--ac); color: var(--ac); }
+.dash-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.dash-panel {
+    background: rgba(3,27,43,.92); border: 1px solid var(--bd);
+    border-radius: 14px; padding: 18px; min-width: 0;
+}
+.dash-panel h3 { margin: 0 0 12px; color: var(--ac); font-size: 1rem; }
+.arch-flow { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
+.arch-node {
+    color: var(--tx); background: rgba(13,91,105,.2); border: 1px dashed var(--ac);
+    border-radius: 10px; padding: 16px 10px; text-align: center; font-size: .85rem;
+}
+.arch-node b { display: block; color: #fff; margin-bottom: 7px; }
+.arch-node span { color: var(--mut); font-size: .78rem; }
+.analytics-metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin: 14px 0; }
+.analytics-metric {
+    min-width: 0; padding: 16px; border: 1px solid var(--bd);
+    border-radius: 12px; background: rgba(255,255,255,.045);
+}
+.analytics-metric strong {
+    display: block; color: var(--ac); font-size: clamp(1.35rem, 2.5vw, 2rem);
+    line-height: 1.2; overflow-wrap: anywhere;
+}
+.analytics-metric span { display: block; margin-top: 6px; color: var(--mut); font-size: .8rem; }
+.performance-chart { display: grid; gap: 18px; padding: 20px 8px; }
+.performance-row {
+    display: grid; grid-template-columns: 115px minmax(0,1fr) 58px;
+    align-items: center; gap: 10px; color: var(--mut); font-size: .82rem;
+}
+.performance-row strong { color: var(--tx); text-align: right; font-variant-numeric: tabular-nums; }
+.performance-track {
+    height: 16px; overflow: hidden; border-radius: 20px;
+    background: rgba(255,255,255,.09); border: 1px solid var(--bd);
+}
+.performance-fill {
+    height: 100%; width: 0; border-radius: inherit;
+    background: linear-gradient(90deg, #2aa6b4, var(--ac)); transition: width .6s ease;
+}
+.metric-empty {
+    min-height: 170px; display: flex; align-items: center; justify-content: center;
+    text-align: center; color: var(--mut); background: rgba(2,19,31,.45);
+    border: 1px dashed var(--bd); border-radius: 10px; padding: 20px; font-size: .86rem;
+}
+.dash-note { font-size: .78rem; color: var(--mut); line-height: 1.5; margin-top: 10px; }
+.hero { display: grid; grid-template-columns: 1fr; gap: 18px; margin: 10px 0 18px; }
+.pipe { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.arrow { color: var(--mut); }
+.step {
+    padding: 7px 12px; border-radius: 10px; border: 1px solid var(--bd);
+    font-size: .8rem; background: rgba(255,255,255,.04);
+    transition: background .8s ease, border-color .8s ease;
+}
+.step.on { background: rgba(111,211,200,.22); border-color: var(--ac); }
+.layout { display: grid; grid-template-columns: 330px minmax(0,1fr); gap: 18px; }
+label { display: block; font-size: .82rem; color: var(--mut); margin-top: 10px; }
+.row { display: flex; justify-content: space-between; }
+output { color: var(--tx); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--ac); }
+input[type=file] {
+    width: 100%; color: var(--mut); border: 1px dashed var(--bd);
+    padding: 14px; border-radius: 12px; background: rgba(255,255,255,.03);
+}
+button {
+    width: 100%; margin-top: 14px; padding: 12px; border: 0; border-radius: 10px;
+    font-weight: 600; cursor: pointer; color: #032b35; background: var(--ac);
+}
+button:hover { filter: brightness(1.1); }
+button:disabled { opacity: .6; cursor: wait; }
+button.sec { background: transparent; color: var(--ac); border: 1px solid var(--ac); }
+.imgs { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.frame { border-radius: 12px; overflow: hidden; border: 1px solid var(--bd); }
+.frame img { width: 100%; max-width: 100%; height: auto; display: block; object-fit: contain; }
+#selectedPreview { width: 100%; height: 250px; max-height: 250px; object-fit: contain; background: rgba(0,0,0,.18); }
+.cap { font-size: .78rem; color: var(--mut); margin: 0 0 6px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.stat {
+    padding: 12px; border-radius: 12px; background: rgba(255,255,255,.05);
+    border: 1px solid var(--bd); text-align: center;
+}
+.stat b { display: block; font-size: 1.5rem; }
+.stat span { font-size: .74rem; color: var(--mut); }
+table { width: 100%; border-collapse: collapse; font-size: .83rem; overflow-wrap: anywhere; }
+td, th { padding: 8px; border-bottom: 1px solid var(--bd); text-align: left; color: var(--tx); }
+#msg, #classMsg { color: #ffb0b0; margin-top: 10px; font-size: .85rem; }
+.success { color: #6fd3c8 !important; }
+.class-output {
+    padding: 18px; margin-top: 16px; border: 1px solid var(--ac);
+    border-radius: 12px; background: rgba(111,211,200,.09);
+}
+.class-output p { font-size: 1rem; }
+.hide { display: none !important; }
+.mb14 { margin-bottom: 14px; }
+.mt14 { margin-top: 14px; }
+.mt16 { margin-top: 16px; }
+.confusion-img { width: 100%; height: auto; border-radius: 10px; background: #fff; padding: 8px; }
+
+
+/* ===== TOP NAVBAR ===== */
+.topnav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(3,27,43,.92);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--bd);
+}
+.topnav-inner {
+    max-width: 1440px; margin: 0 auto; padding: 10px 20px;
+    display: flex; align-items: center; gap: 18px;
+}
+.brand { color: #f2fbff; font-weight: 700; font-size: 1.15rem; text-decoration: none; white-space: nowrap; }
+.nav-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.nav-links a {
+    color: var(--tx); text-decoration: none; font-size: .85rem;
+    padding: 8px 12px; border-radius: 8px; border: 1px solid transparent;
+    transition: background .2s, border-color .2s, color .2s;
+}
+.nav-links a:hover { color: var(--ac); border-color: var(--bd); }
+.nav-links a.active { color: #032b35; background: var(--ac); font-weight: 600; }
+.nav-sep { width: 1px; height: 22px; background: var(--bd); margin: 0 4px; }
+.nav-toggle {
+    display: none; width: auto; margin: 0 0 0 auto; padding: 8px 12px;
+    font-size: 1.1rem; line-height: 1; background: transparent;
+    color: var(--ac); border: 1px solid var(--ac);
+}
+.video-panel { margin-bottom: 14px; }
+.video-frame {
+    position: relative; border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--bd); background: #000; aspect-ratio: 16 / 9;
+    max-height: 480px; margin: 0 auto;
+}
+.video-frame video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.page { display: none; }
+.page.active { display: block; }
+.chart-img {
+    display: block; width: 100%; height: auto; border-radius: 10px;
+    background: #fff; padding: 8px;
+}
+.chart-stack { display: grid; gap: 14px; }
+.chart-cap { font-size: .8rem; color: var(--mut); margin: 0 0 6px; }
+@media (max-width: 900px) {
+    .nav-toggle { display: block; }
+    .nav-links {
+        display: none; width: 100%; flex-direction: column; align-items: stretch;
+        margin-left: 0; padding-top: 8px;
+    }
+    .nav-links.open { display: flex; }
+    .topnav-inner { flex-wrap: wrap; }
+    .nav-sep { width: 100%; height: 1px; margin: 4px 0; }
+}
+
+@media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .dash-grid { grid-template-columns: 1fr; }
+    .arch-flow { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 620px) {
+    .imgs { grid-template-columns: 1fr; }
+    .wrap { padding: 12px; }
+    .analytics-metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 520px) {
+    .performance-row { grid-template-columns: 90px minmax(0,1fr) 52px; gap: 7px; font-size: .74rem; }
+    .dashboard-nav { gap: 6px; }
+    .dashboard-nav a { font-size: .75rem; padding: 8px 9px; }
+    .arch-flow { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- BACKGROUND VIDEO -->
+<video id="bgvid" src="{{ url_for('static', filename='ocean.mp4') }}"
+       muted loop playsinline autoplay preload="auto"></video>
+
+<!-- TOP NAVBAR -->
+<nav class="topnav" aria-label="Main navigation">
+    <div class="topnav-inner">
+        <a class="brand" href="#dashboard" data-page="dashboard">FishGuard 🐟</a>
+        <button class="nav-toggle" id="navToggle" type="button"
+                aria-label="Toggle menu" aria-expanded="false">☰</button>
+        <div class="nav-links" id="navLinks">
+            <a href="#dashboard" data-page="dashboard">Dashboard</a>
+            <a href="#model" data-page="model">Model</a>
+        </div>
+    </div>
+</nav>
+
+<div class="wrap" id="top">
+
+<header>
+    <h1>FishGuard 🐟</h1>
+    <div class="sub">AI Fish Classification &amp; ABC-enhanced YOLO Fish Detection</div>
+</header>
+
+
+
+<div class="page active" id="page-dashboard">
+
+<!-- ANALYTICS DASHBOARD -->
+<section id="dashboard" class="card">
+    <h2>FishGuard Analytics Dashboard</h2>
+    <p class="sub">ABC-based image calibration, fish classification and fish detection performance.</p>
+
+    <div class="dash-panel video-panel">
+        <h3>FishGuard Workflow</h3>
+        <div class="video-frame">
+            <video id="dashVideo" src="{{ url_for('static', filename='workflow.mp4') }}"
+                   autoplay muted loop playsinline preload="auto"></video>
+        </div>
+    </div>
+
+    <div id="architecture" class="dash-panel mb14">
+        <h3>System Architecture</h3>
+        <div class="arch-flow">
+            <div class="arch-node">
+                <b>Input Image</b>
+                <span>Uploaded underwater fish image</span>
+            </div>
+            <div class="arch-node">
+                <b>ABC Calibration</b>
+                <span>Brightness · Contrast · Gamma · Saturation · Sharpness</span>
+            </div>
+            <div class="arch-node">
+                <b>YOLO Detector</b>
+                <span>Fish localization and bounding boxes</span>
+            </div>
+            <div class="arch-node">
+                <b>ResNet18 Classifier</b>
+                <span>23-class species classification</span>
+            </div>
+        </div>
+        <p class="dash-note">
+            Current project setup: ResNet18 classification and the available pretrained YOLO detector.
+            The detector is not YOLO11m unless its weights are replaced with a YOLO11m model.
+        </p>
+    </div>
+
+    <div class="analytics-metrics" aria-label="Classification performance metrics">
+        <div class="analytics-metric">
+            <strong id="metricAccuracy">—</strong>
+            <span>Classification Accuracy</span>
+        </div>
+        <div class="analytics-metric">
+            <strong id="metricPrecision">—</strong>
+            <span>Macro Precision</span>
+        </div>
+        <div class="analytics-metric">
+            <strong id="metricRecall">—</strong>
+            <span>Macro Recall</span>
+        </div>
+        <div class="analytics-metric">
+            <strong id="metricF1">—</strong>
+            <span>Macro F1 Score</span>
+        </div>
+    </div>
+
+    <p id="analyticsDataNote" class="dash-note" aria-live="polite">
+        Loading saved classification metrics…
+    </p>
+
+    <div class="dash-grid">
+
+        <section id="training" class="dash-panel">
+            <h3>1. Classification Performance (Saved Evaluation)</h3>
+            <div class="performance-chart" role="img"
+                 aria-label="Bar chart of saved classification accuracy, macro precision, macro recall and macro F1 metrics">
+                <div class="performance-row"><span>Accuracy</span><div class="performance-track"><div id="barAccuracy" class="performance-fill"></div></div><strong id="barAccuracyValue">—</strong></div>
+                <div class="performance-row"><span>Macro Precision</span><div class="performance-track"><div id="barPrecision" class="performance-fill"></div></div><strong id="barPrecisionValue">—</strong></div>
+                <div class="performance-row"><span>Macro Recall</span><div class="performance-track"><div id="barRecall" class="performance-fill"></div></div><strong id="barRecallValue">—</strong></div>
+                <div class="performance-row"><span>Macro F1</span><div class="performance-track"><div id="barF1" class="performance-fill"></div></div><strong id="barF1Value">—</strong></div>
+            </div>
+            <p class="dash-note">These are saved evaluation metrics, not epoch-wise training accuracy/loss. No training history has been recorded.</p>
+        </section>
+
+        <section id="confusion" class="dash-panel">
+            <h3>2. Confusion Matrix - ResNet18</h3>
+            <img class="confusion-img"
+                 src="{{ url_for('static', filename='confusion_matrix.png') }}"
+                 alt="FishGuard Confusion Matrix">
+            <p class="dash-note">Evaluation on 5,465 images across 23 fish species.</p>
+        </section>
+
+        <section id="yolo-validation" class="dash-panel">
+            <h3>3. YOLO Validation Curves</h3>
+            <div class="chart-stack">
+            <p class="chart-cap">mAP@0.50 and mAP@0.50:0.95 per epoch</p>
+            <img class="chart-img" src="{{ url_for('static', filename='yolo_validation.png') }}" alt="YOLO11m validation mAP per epoch">
+            <p class="chart-cap">Precision and recall per epoch</p>
+            <img class="chart-img" src="{{ url_for('static', filename='precision_recall_epochs.png') }}" alt="Precision and recall per epoch">
+            </div>
+            <p class="dash-note">Validation over 30 epochs. Final mAP@0.50 is about 0.95 and mAP@0.50:0.95 about 0.72.</p>
+        </section>
+
+        <section id="pr-curve" class="dash-panel">
+            <h3>4. Precision–Recall Curve</h3>
+            <img class="chart-img" src="{{ url_for('static', filename='pr_curve.png') }}" alt="Precision-Recall curve per class">
+            <p class="dash-note">Per-class precision–recall curves; the blue line is all classes at mAP@0.5 = 0.846.</p>
+        </section>
+
+        <section id="abc-convergence" class="dash-panel">
+            <h3>5. ABC Fitness Convergence</h3>
+            <img class="chart-img" src="{{ url_for('static', filename='abc_convergence.png') }}" alt="Artificial Bee Colony fitness convergence">
+            <p class="dash-note">Best and mean fitness of the Artificial Bee Colony over 8 iterations.</p>
+        </section>
+
+        <section class="dash-panel">
+            <h3>6. Model &amp; Data Notes</h3>
+            <p class="sub">Classification: ResNet18, 23 dataset classes.</p>
+            <p class="sub">Detection: pretrained YOLO weights currently configured in the Flask app.</p>
+            <p class="dash-note">
+                Graphs above are generated from the saved YOLO validation, precision–recall and ABC optimization runs.
+            </p>
+        </section>
+
+    </div>
+</section>
+
+
+
+</div><!-- /page-dashboard -->
+
+<div class="page" id="page-model">
+
+<!-- HOW FISHGUARD WORKS -->
+<section class="hero" id="how">
+    <div class="card">
+        <h2>How FishGuard works</h2>
+        <div class="pipe">
+            <span class="step">Image</span>
+            <span class="arrow">→</span>
+            <span class="step">ABC Calibration</span>
+            <span class="arrow">→</span>
+            <span class="step">YOLO Detection</span>
+            <span class="arrow">→</span>
+            <span class="step">Detections</span>
+        </div>
+        <p class="sub mt14">Upload one fish image and use both classification and detection.</p>
+        <div class="stats">
+            <div class="stat"><b id="s_fish">–</b><span>Fish detected</span></div>
+            <div class="stat"><b id="s_base">–</b><span>Baseline detections</span></div>
+            <div class="stat"><b id="s_conf">–</b><span>Top confidence</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- SINGLE IMAGE UPLOAD -->
+<section class="card" id="upload">
+    <h2>🐠 Select Fish Image</h2>
+    <p class="sub">
+        Select your fish image once. The same image will be used
+        for classification and object detection.
+    </p>
+    <input type="file" id="sharedFile" accept="image/*">
+    <div id="previewBox" class="hide mt14">
+        <p class="cap">Selected Image Preview</p>
+        <div class="frame">
+            <img id="selectedPreview" alt="Selected fish image">
+        </div>
+    </div>
+</section>
+
+<!-- CLASSIFICATION -->
+<section class="card" id="classify">
+    <h2>🐠 Fish Species Classification</h2>
+    <p class="sub">Identify fish species using your trained ResNet18 model.</p>
+    <button id="classifyBtn" type="button">Classify Fish</button>
+    <div id="classMsg"></div>
+    <div id="classResult" class="hide class-output">
+        <h2>Classification Result</h2>
+        <p>Species: <strong id="speciesName"></strong></p>
+        <p>Confidence: <strong id="speciesConfidence"></strong></p>
+    </div>
+</section>
+
+<!-- OBJECT DETECTION AND ABC CALIBRATION -->
+<section class="layout" id="detect">
+    <div class="card">
+        <h2>Object Detection &amp; ABC Calibration</h2>
+
+        {% set meta = {
+            'brightness': (-50, 50, 0.1),
+            'contrast':   (0.6, 1.6, 0.01),
+            'gamma':      (0.6, 1.8, 0.01),
+            'saturation': (0.6, 1.8, 0.01),
+            'sharpness':  (0.6, 2.0, 0.01)
+        } %}
+
+        {% for k, v in meta.items() %}
+        <label for="{{ k }}">
+            <div class="row">
+                <span>{{ k | capitalize }}</span>
+                <output id="o_{{ k }}">{{ '%.3f' | format(params[k]) }}</output>
+            </div>
+            <input type="range"
+                   id="{{ k }}"
+                   min="{{ v[0] }}"
+                   max="{{ v[1] }}"
+                   step="{{ v[2] }}"
+                   value="{{ params[k] }}">
+        </label>
+        {% endfor %}
+
+        <label for="conf">
+            <div class="row">
+                <span>Confidence</span>
+                <output id="o_conf">0.250</output>
+            </div>
+            <input type="range" id="conf" min="0.05" max="0.9" step="0.05" value="0.25">
+        </label>
+
+        <button id="run" type="button">Detect Fish</button>
+        <button class="sec" id="reset" type="button">Reset to ABC Parameters</button>
+        <div id="msg"></div>
+    </div>
+
+    <div>
+        <div class="card">
+            <h2>Object Detection Results</h2>
+            <div id="empty" class="sub">Select an image and press Detect Fish.</div>
+
+            <div id="out" class="hide">
+                <div class="imgs">
+                    <div>
+                        <p class="cap">Baseline YOLO (Original)</p>
+                        <div class="frame"><img id="i1" alt="Baseline detection"></div>
+                    </div>
+                    <div>
+                        <p class="cap">ABC Enhanced YOLO</p>
+                        <div class="frame"><img id="i2" alt="Enhanced detection"></div>
+                    </div>
+                </div>
+
+                <h2 class="mt16">Detections (FishGuard)</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Species</th>
+                            <th>YOLO Confidence</th>
+                            <th>Classifier Confidence</th>
+                            <th>Bounding Box</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tb"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card hide" id="rescard">
+            <h2>Test-set Comparison</h2>
+            <table id="rt"></table>
+        </div>
+    </div>
+</section>
+
+</div><!-- /page-model -->
+
+</div>
+
+<script>
+// SAFE HTML DISPLAY
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, function (ch) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[ch];
+    });
+}
+
+
+// NAVBAR: page switching (Dashboard / Model) + mobile menu
+const navToggle = document.getElementById("navToggle");
+const navLinks = document.getElementById("navLinks");
+const pages = { dashboard: document.getElementById("page-dashboard"),
+                model: document.getElementById("page-model") };
+
+function showPage(name, scrollTop) {
+    if (!pages[name]) name = "dashboard";
+    Object.keys(pages).forEach(k => pages[k].classList.toggle("active", k === name));
+    document.querySelectorAll("[data-page]").forEach(a => {
+        if (a.classList.contains("brand")) return;
+        a.classList.toggle("active", a.dataset.page === name);
+    });
+    if (scrollTop) window.scrollTo(0, 0);
+    if (name === "dashboard" && typeof playDashVideo === "function") playDashVideo();
+}
+
+document.querySelectorAll("[data-page]").forEach(a => {
+    a.addEventListener("click", e => {
+        e.preventDefault();
+        const name = a.dataset.page;
+        history.replaceState(null, "", "#" + name);
+        showPage(name, true);
+        navLinks.classList.remove("open");
+        navToggle.setAttribute("aria-expanded", "false");
+    });
+});
+
+navToggle.addEventListener("click", () => {
+    const open = navLinks.classList.toggle("open");
+    navToggle.setAttribute("aria-expanded", String(open));
+});
+
+window.addEventListener("hashchange", () => showPage(location.hash.slice(1), true));
+showPage(location.hash.slice(1), false);
+
+// BACKGROUND VIDEO: keep it playing continuously
+var bgv = document.getElementById("bgvid");
+function playBgVideo() { if (bgv) bgv.play().catch(() => {}); }
+if (bgv) {
+    bgv.loop = true;
+    bgv.muted = true;
+    bgv.addEventListener("ended", () => { bgv.currentTime = 0; playBgVideo(); });
+    bgv.addEventListener("pause", () => { if (!document.hidden) playBgVideo(); });
+    bgv.addEventListener("error", () => console.error("Background video failed to load:", bgv.currentSrc));
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) playBgVideo(); });
+    document.addEventListener("click", () => { if (bgv.paused) playBgVideo(); }, { once: true });
+    playBgVideo();
+}
+
+// DASHBOARD VIDEO: keep it playing continuously
+var dashVideo = document.getElementById("dashVideo");
+function playDashVideo() { if (dashVideo) dashVideo.play().catch(() => {}); }
+if (dashVideo) {
+    dashVideo.loop = true;
+    dashVideo.muted = true;
+    dashVideo.addEventListener("ended", () => { dashVideo.currentTime = 0; playDashVideo(); });
+    dashVideo.addEventListener("pause", () => {
+        if (!document.hidden && pages.dashboard.classList.contains("active")) playDashVideo();
+    });
+    dashVideo.addEventListener("error", () => console.error("Video failed to load:", dashVideo.currentSrc));
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) playDashVideo(); });
+    document.addEventListener("click", () => { if (dashVideo.paused) playDashVideo(); }, { once: true });
+    playDashVideo();
+}
+
+// SHARED IMAGE UPLOAD
+const sharedFile = document.getElementById("sharedFile");
+let previousPreviewURL = null;
+
+sharedFile.addEventListener("change", () => {
+    const file = sharedFile.files[0];
+
+    document.getElementById("classResult").classList.add("hide");
+    document.getElementById("out").classList.add("hide");
+
+    if (!file) {
+        document.getElementById("previewBox").classList.add("hide");
+        return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+        alert("Please select a valid image.");
+        sharedFile.value = "";
+        return;
+    }
+
+    if (previousPreviewURL) URL.revokeObjectURL(previousPreviewURL);
+
+    previousPreviewURL = URL.createObjectURL(file);
+    document.getElementById("selectedPreview").src = previousPreviewURL;
+    document.getElementById("previewBox").classList.remove("hide");
+    document.getElementById("classMsg").textContent = "";
+    document.getElementById("msg").textContent = "";
+});
+
+// FISH CLASSIFICATION
+const classifyBtn = document.getElementById("classifyBtn");
+const classMsg = document.getElementById("classMsg");
+const classResult = document.getElementById("classResult");
+
+classifyBtn.addEventListener("click", async () => {
+    classMsg.textContent = "";
+    classMsg.classList.remove("success");
+    classResult.classList.add("hide");
+
+    const file = sharedFile.files[0];
+    if (!file) {
+        classMsg.textContent = "Please select a fish image first.";
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    classifyBtn.disabled = true;
+    classifyBtn.textContent = "Classifying...";
+
+    try {
+        const response = await fetch("/classify", { method: "POST", body: formData });
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+            throw new Error(data.error || "Classification failed");
+        }
+
+        document.getElementById("speciesName").textContent = data.species;
+        document.getElementById("speciesConfidence").textContent = data.confidence + "%";
+        classResult.classList.remove("hide");
+        classMsg.textContent = "Classification successful!";
+        classMsg.classList.add("success");
+    } catch (error) {
+        classMsg.textContent = error.message;
+    } finally {
+        classifyBtn.disabled = false;
+        classifyBtn.textContent = "Classify Fish";
+    }
+});
+
+// ABC CALIBRATION SLIDERS
+const keys = ["brightness", "contrast", "gamma", "saturation", "sharpness"];
+const init = {};
+
+keys.concat(["conf"]).forEach(k => {
+    const element = document.getElementById(k);
+    init[k] = element.value;
+    element.oninput = () => {
+        document.getElementById("o_" + k).textContent = Number(element.value).toFixed(3);
+    };
+});
+
+document.getElementById("reset").onclick = () => {
+    keys.concat(["conf"]).forEach(k => {
+        const element = document.getElementById(k);
+        element.value = init[k];
+        element.oninput();
+    });
+};
+
+// YOLO OBJECT DETECTION
+const steps = [...document.querySelectorAll(".step")];
+
+document.getElementById("run").onclick = async () => {
+    const file = sharedFile.files[0];
+    const msg = document.getElementById("msg");
+
+    msg.textContent = "";
+    msg.classList.remove("success");
+
+    if (!file) {
+        msg.textContent = "Please select a fish image first.";
+        return;
+    }
+
+    const fd = new FormData();
+    fd.append("image", file);
+    keys.concat(["conf"]).forEach(k => {
+        fd.append(k, document.getElementById(k).value);
+    });
+
+    const button = document.getElementById("run");
+    button.textContent = "Detecting...";
+    button.disabled = true;
+    steps.forEach(s => s.classList.remove("on"));
+
+    try {
+        const response = await fetch("/detect", { method: "POST", body: fd });
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+            throw new Error(data.error || "Detection failed");
+        }
+
+        document.getElementById("i1").src = data.baseline.image;
+        document.getElementById("i2").src = data.enhanced.image;
+        document.getElementById("empty").classList.add("hide");
+        document.getElementById("out").classList.remove("hide");
+
+        const detections = data.enhanced.detections || [];
+
+        document.getElementById("tb").innerHTML =
+            detections.map(x => {
+                const yoloConf = x.detector_confidence !== undefined
+                    ? Number(x.detector_confidence).toFixed(2) + "%"
+                    : (Number(x.conf) * 100).toFixed(2) + "%";
+                const clsConf = x.species_confidence !== undefined
+                    ? Number(x.species_confidence).toFixed(2) + "%"
+                    : "Not available";
+                const box = Array.isArray(x.box) ? x.box.join(", ") : "N/A";
+
+                return `
+                    <tr>
+                        <td>${escapeHTML(x.class)}</td>
+                        <td>${yoloConf}</td>
+                        <td>${clsConf}</td>
+                        <td>${escapeHTML(box)}</td>
+                    </tr>`;
+            }).join("") ||
+            '<tr><td colspan="4">No fish detected</td></tr>';
+
+        document.getElementById("s_fish").textContent = detections.length;
+        document.getElementById("s_base").textContent = (data.baseline.detections || []).length;
+        document.getElementById("s_conf").textContent =
+            detections.length
+                ? Math.round(100 * Math.max(...detections.map(x => Number(x.conf || 0)))) + "%"
+                : "–";
+
+        steps.forEach((s, i) => {
+            setTimeout(() => s.classList.add("on"), i * 250);
+        });
+
+        msg.textContent = "Detection successful!";
+        msg.classList.add("success");
+    } catch (error) {
+        msg.classList.remove("success");
+        msg.textContent = error.message;
+    } finally {
+        button.textContent = "Detect Fish";
+        button.disabled = false;
+    }
+};
+
+// LOAD SAVED ANALYTICS METRICS
+fetch("/analytics")
+    .then(response => {
+        if (!response.ok) throw new Error("Could not load analytics");
+        return response.json();
+    })
+    .then(data => {
+        const metrics = data.metrics || {};
+        const notes = data.notes || {};
+
+        const setMetric = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent =
+                    value != null && Number.isFinite(Number(value))
+                        ? Number(value).toFixed(2) + "%"
+                        : "—";
+            }
+        };
+
+        setMetric("metricAccuracy", metrics.accuracy);
+        setMetric("metricPrecision", metrics.precision_macro);
+        setMetric("metricRecall", metrics.recall_macro);
+        setMetric("metricF1", metrics.f1_macro);
+
+        const drawMetricBar = (barId, valueId, value) => {
+            const bar = document.getElementById(barId);
+            const label = document.getElementById(valueId);
+            const numericValue = Number(value);
+            if (!bar || !label || value == null || !Number.isFinite(numericValue)) return;
+            const safeValue = Math.max(0, Math.min(100, numericValue));
+            bar.style.width = safeValue + "%";
+            label.textContent = safeValue.toFixed(2) + "%";
+        };
+
+        drawMetricBar("barAccuracy", "barAccuracyValue", metrics.accuracy);
+        drawMetricBar("barPrecision", "barPrecisionValue", metrics.precision_macro);
+        drawMetricBar("barRecall", "barRecallValue", metrics.recall_macro);
+        drawMetricBar("barF1", "barF1Value", metrics.f1_macro);
+
+        const count = Number(notes.dataset_images || 0).toLocaleString();
+        const classes = Number(notes.number_of_classes || 0);
+        const noteElement = document.getElementById("analyticsDataNote");
+
+        if (noteElement) {
+            noteElement.textContent =
+                `Saved evaluation metrics: ${Number(metrics.test_images || 0).toLocaleString()} evaluated images. ` +
+                `Dataset: ${count} images across ${classes} classes. ` +
+                (notes.evaluation_note || "");
+        }
+    })
+    .catch(error => {
+        const noteElement = document.getElementById("analyticsDataNote");
+        if (noteElement) {
+            noteElement.textContent = "Analytics metrics could not be loaded: " + error.message;
+        }
+    });
+
+// TEST RESULTS
+fetch("/results")
+    .then(response => response.json())
+    .then(data => {
+        if (!data.baseline || !data.abc) return;
+
+        document.getElementById("rescard").classList.remove("hide");
+        document.getElementById("rt").innerHTML =
+            "<tr><th>Metric</th><th>Baseline %</th><th>+ABC %</th><th>Change</th></tr>" +
+            Object.keys(data.baseline).map(k => {
+                const baseline = Number(data.baseline[k]);
+                const abc = Number(data.abc[k]);
+                return `
+                    <tr>
+                        <td>${escapeHTML(k)}</td>
+                        <td>${baseline.toFixed(2)}</td>
+                        <td>${abc.toFixed(2)}</td>
+                        <td>${(abc - baseline).toFixed(2)}</td>
+                    </tr>`;
+            }).join("");
+    })
+    .catch(error => console.log("Test results unavailable:", error));
+</script>
+
+</body>
+</html>

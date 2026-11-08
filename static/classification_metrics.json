@@ -1,0 +1,161 @@
+{
+  "accuracy": 92.92,
+  "test_images": 5465,
+  "number_of_classes": 23,
+  "precision_macro": 84.3,
+  "recall_macro": 74.88,
+  "f1_macro": 77.97,
+  "classification_report": {
+    "01_Dascyllus_reticulatus": {
+      "precision": 0.9311724689875951,
+      "recall": 0.9607762180016516,
+      "f1-score": 0.9457427352164194,
+      "support": 2422.0
+    },
+    "02_plectroglyphidodon_dickii": {
+      "precision": 0.8632326820603907,
+      "recall": 0.9067164179104478,
+      "f1-score": 0.8844404003639672,
+      "support": 536.0
+    },
+    "03_Chromis_chrysura": {
+      "precision": 0.9083969465648855,
+      "recall": 0.8286908077994429,
+      "f1-score": 0.8667152221412965,
+      "support": 718.0
+    },
+    "04_Amphiprion_clarkii": {
+      "precision": 0.9587878787878787,
+      "recall": 0.9777503090234858,
+      "f1-score": 0.9681762545899633,
+      "support": 809.0
+    },
+    "05_chaetodon_lunulatus": {
+      "precision": 0.9900793650793651,
+      "recall": 0.9861660079051383,
+      "f1-score": 0.9881188118811881,
+      "support": 506.0
+    },
+    "06_chaetodon_trifascial": {
+      "precision": 1.0,
+      "recall": 0.7105263157894737,
+      "f1-score": 0.8307692307692308,
+      "support": 38.0
+    },
+    "07_myripristis_kuntee": {
+      "precision": 0.8148148148148148,
+      "recall": 0.9777777777777777,
+      "f1-score": 0.8888888888888888,
+      "support": 90.0
+    },
+    "08_Acanthurus_nigrofuscus": {
+      "precision": 0.64,
+      "recall": 0.37209302325581395,
+      "f1-score": 0.47058823529411764,
+      "support": 43.0
+    },
+    "09_hemigymnus_fasciatus": {
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1-score": 0.9333333333333333,
+      "support": 48.0
+    },
+    "10_Neoniphon_sammara": {
+      "precision": 0.9833333333333333,
+      "recall": 1.0,
+      "f1-score": 0.9915966386554622,
+      "support": 59.0
+    },
+    "11_Abudefduf_vaigiensis": {
+      "precision": 0.9333333333333333,
+      "recall": 0.7368421052631579,
+      "f1-score": 0.8235294117647058,
+      "support": 19.0
+    },
+    "12_cathigaster_valentini": {
+      "precision": 0.9166666666666666,
+      "recall": 0.7586206896551724,
+      "f1-score": 0.8301886792452831,
+      "support": 29.0
+    },
+    "13_pomacentrus_moluccensis": {
+      "precision": 0.9714285714285714,
+      "recall": 0.9444444444444444,
+      "f1-score": 0.9577464788732394,
+      "support": 36.0
+    },
+    "14_Zebrasoma_scopas": {
+      "precision": 1.0,
+      "recall": 0.2222222222222222,
+      "f1-score": 0.36363636363636365,
+      "support": 18.0
+    },
+    "15_hemigymnus_melapterus": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 8.0
+    },
+    "16_lutjanus_fulvus": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 41.0
+    },
+    "17_Scolopsis_bilineata": {
+      "precision": 0.7777777777777778,
+      "recall": 0.7777777777777778,
+      "f1-score": 0.7777777777777778,
+      "support": 9.0
+    },
+    "18_Scaridae": {
+      "precision": 0.7,
+      "recall": 0.6363636363636364,
+      "f1-score": 0.6666666666666666,
+      "support": 11.0
+    },
+    "19_pempheris_vanicolensis": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 5.0
+    },
+    "20_Zanclus_cornutus": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 4.0
+    },
+    "21_neoglyphidon_nigroris": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 3.0
+    },
+    "22_balistapus_undulatus": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1-score": 0.8571428571428571,
+      "support": 8.0
+    },
+    "23_siganus_fuscescen": {
+      "precision": 1.0,
+      "recall": 0.8,
+      "f1-score": 0.8888888888888888,
+      "support": 5.0
+    },
+    "accuracy": 0.9291857273559012,
+    "macro avg": {
+      "precision": 0.8430010364710702,
+      "recall": 0.7487725110082453,
+      "f1-score": 0.7797368206578108,
+      "support": 5465.0
+    },
+    "weighted avg": {
+      "precision": 0.9271215174773212,
+      "recall": 0.9291857273559012,
+      "f1-score": 0.9262001286497477,
+      "support": 5465.0
+    }
+  }
+}
